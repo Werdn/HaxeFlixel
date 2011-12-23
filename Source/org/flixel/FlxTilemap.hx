@@ -377,19 +377,19 @@ class FlxTilemap extends FlxObject
 	 * @param	Buffer		The <code>FlxTilemapBuffer</code> you are rendering to.
 	 * @param	Camera		The related <code>FlxCamera</code>, mainly for scroll values.
 	 */
-	private function drawTilemap(Buffer:FlxTilemapBuffer, Camera:FlxCamera, ?CameraID:Int = 0):Void
+	private function drawTilemap(Buffer:FlxTilemapBuffer, Camera:FlxCamera):Void
 	{
 		#if flash
 		Buffer.fill();
 		#else
 		_helperPoint.x = x - Std.int(Camera.scroll.x * scrollFactor.x); //copied from getScreenXY()
 		_helperPoint.y = y - Std.int(Camera.scroll.y * scrollFactor.y);
-		/*_helperPoint.x += (_flashPoint.x > 0)?0.0000001: -0.0000001;
-		_helperPoint.y += (_flashPoint.y > 0)?0.0000001: -0.0000001;*/
 		var tileID:Int;
 		var debugColor:Int;
 		var drawX:Float;
 		var drawY:Float;
+		
+		var CameraID:Int = Camera.ID;
 		#end
 		
 		//Copy tile images into the tile buffer
@@ -569,9 +569,8 @@ class FlxTilemap extends FlxObject
 			_flashPoint.x += (_flashPoint.x > 0)?0.0000001: -0.0000001;
 			_flashPoint.y += (_flashPoint.y > 0)?0.0000001: -0.0000001;
 			buffer.draw(camera, _flashPoint);
-			
 			#else
-			drawTilemap(buffer, camera, i - 1);
+			drawTilemap(buffer, camera);
 			#end
 			
 			FlxBasic._VISIBLECOUNT++;

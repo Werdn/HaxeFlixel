@@ -563,16 +563,15 @@ class FlxSprite extends FlxObject
 		var l:Int = cameras.length;
 		
 		#if cpp
-		var prevI:Int;
+		var camID:Int;
 		#end
 		
 		while(i < l)
 		{
-			#if cpp
-			prevI = i;
-			#end
-			
 			camera = cameras[i++];
+			#if cpp
+			camID = camera.ID;
+			#end
 			
 			if (!onScreen(camera))
 			{
@@ -593,25 +592,25 @@ class FlxSprite extends FlxObject
 				#else
 				if (_tileSheetData != null) // TODO: remove this if statement later
 				{
-					_tileSheetData.drawData[prevI].push(Math.floor(_point.x) + _framesData.halfWidth);
-					_tileSheetData.drawData[prevI].push(Math.floor(_point.y) + _framesData.halfHeight);
+					_tileSheetData.drawData[camID].push(Math.floor(_point.x) + _framesData.halfWidth);
+					_tileSheetData.drawData[camID].push(Math.floor(_point.y) + _framesData.halfHeight);
 					
 					//handle reversed sprites
 					if ((_flipped != 0) && (_facing == FlxObject.LEFT))
 					{
-						_tileSheetData.drawData[prevI].push(_framesData.frameIDs[_curIndex + _framesData.halfFrameNumber]);
+						_tileSheetData.drawData[camID].push(_framesData.frameIDs[_curIndex + _framesData.halfFrameNumber]);
 					}
 					else
 					{
-						_tileSheetData.drawData[prevI].push(_framesData.frameIDs[_curIndex]);
+						_tileSheetData.drawData[camID].push(_framesData.frameIDs[_curIndex]);
 					}
 					
-					_tileSheetData.drawData[prevI].push(1.0); // scale
-					_tileSheetData.drawData[prevI].push(0.0); // rotation
-					_tileSheetData.drawData[prevI].push(_red * camera.red); 
-					_tileSheetData.drawData[prevI].push(_green * camera.green);
-					_tileSheetData.drawData[prevI].push(_blue * camera.blue);
-					_tileSheetData.drawData[prevI].push(_alpha);
+					_tileSheetData.drawData[camID].push(1.0); // scale
+					_tileSheetData.drawData[camID].push(0.0); // rotation
+					_tileSheetData.drawData[camID].push(_red * camera.red); 
+					_tileSheetData.drawData[camID].push(_green * camera.green);
+					_tileSheetData.drawData[camID].push(_blue * camera.blue);
+					_tileSheetData.drawData[camID].push(_alpha);
 				}
 				#end
 			}
@@ -630,17 +629,17 @@ class FlxSprite extends FlxObject
 				#else
 				if (_tileSheetData != null) // TODO: remove this if statement later
 				{
-					_tileSheetData.drawData[prevI].push(Math.floor(_point.x) + _framesData.halfWidth);
-					_tileSheetData.drawData[prevI].push(Math.floor(_point.y) + _framesData.halfHeight);
+					_tileSheetData.drawData[camID].push(Math.floor(_point.x) + _framesData.halfWidth);
+					_tileSheetData.drawData[camID].push(Math.floor(_point.y) + _framesData.halfHeight);
 					
-					_tileSheetData.drawData[prevI].push(_framesData.frameIDs[_curIndex]);
+					_tileSheetData.drawData[camID].push(_framesData.frameIDs[_curIndex]);
 					
-					_tileSheetData.drawData[prevI].push(scale.x); // scale
-					_tileSheetData.drawData[prevI].push(angle * 0.017453293); // rotation
-					_tileSheetData.drawData[prevI].push(_red * camera.red); 
-					_tileSheetData.drawData[prevI].push(_green * camera.green);
-					_tileSheetData.drawData[prevI].push(_blue * camera.blue);
-					_tileSheetData.drawData[prevI].push(_alpha);
+					_tileSheetData.drawData[camID].push(scale.x); // scale
+					_tileSheetData.drawData[camID].push(angle * 0.017453293); // rotation
+					_tileSheetData.drawData[camID].push(_red * camera.red); 
+					_tileSheetData.drawData[camID].push(_green * camera.green);
+					_tileSheetData.drawData[camID].push(_blue * camera.blue);
+					_tileSheetData.drawData[camID].push(_alpha);
 				}
 				#end
 			}
