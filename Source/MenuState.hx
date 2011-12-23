@@ -4,7 +4,8 @@ import nme.Assets;
 import nme.geom.Rectangle;
 import nme.net.SharedObject;
 import org.flixel.FlxButton;
-import org.flixel.FlxEmitter;
+//import org.flixel.FlxEmitter;
+import addons.FlxEmitterExt;
 import org.flixel.FlxG;
 import org.flixel.FlxPath;
 import org.flixel.FlxSave;
@@ -15,7 +16,8 @@ import org.flixel.FlxU;
 
 class MenuState extends FlxState
 {
-	public var gibs:FlxEmitter;
+	//public var gibs:FlxEmitter;
+	public var gibs:FlxEmitterExt;
 	public var playButton:FlxButton;
 	public var title1:FlxText;
 	public var title2:FlxText;
@@ -49,7 +51,8 @@ class MenuState extends FlxState
 		}
 
 		//All the bits that blow up when the text smooshes together
-		gibs = new FlxEmitter(FlxG.width / 2 - 50, FlxG.height / 2 - 10);
+	//	gibs = new FlxEmitter(FlxG.width / 2 - 50, FlxG.height / 2 - 10);
+		gibs = new FlxEmitterExt(FlxG.width / 2 - 50, FlxG.height / 2 - 10);
 		gibs.setSize(100, 30);
 		gibs.setYSpeed( -200, -20);
 		gibs.setRotation( -720, 720);
@@ -101,7 +104,11 @@ class MenuState extends FlxState
 			title2.velocity.x = 0;
 			
 			//Then, play a cool sound, change their color, and blow up pieces everywhere
-			FlxG.play(Assets.getSound("assets/menu_hit.wav"));
+			if (Mode.SoundOn)
+			{
+				FlxG.play(Assets.getSound("assets/menu_hit" + Mode.SoundExtension));
+			}
+			
 			FlxG.flash(0xffd8eba2, 0.5);
 			FlxG.shake(0.035, 0.5);
 			title1.color = 0xd8eba2;
@@ -150,9 +157,13 @@ class MenuState extends FlxState
 		if(!fading && ((FlxG.keys.X && FlxG.keys.C) || attractMode)) 
 		{
 			fading = true;
-			FlxG.play(Assets.getSound("assets/menu_hit_2.wav"));
-			FlxG.flash(0xffd8eba2,0.5);
-			FlxG.fade(0xff131c1b,1,onFade);
+			if (Mode.SoundOn)
+			{
+				FlxG.play(Assets.getSound("assets/menu_hit_2" + Mode.SoundExtension));
+			}
+			
+			FlxG.flash(0xffd8eba2, 0.5);
+			FlxG.fade(0xff131c1b, 1, onFade);
 		}
 	}
 	
@@ -171,8 +182,12 @@ class MenuState extends FlxState
 	
 	private function onPlay():Void
 	{
-		playButton.exists = false;
-		FlxG.play(Assets.getSound("assets/menu_hit_2.wav"));
+		//playButton.exists = false;
+		onFade();
+		if (Mode.SoundOn)
+		{
+			FlxG.play(Assets.getSound("assets/menu_hit_2" + Mode.SoundExtension));
+		}
 	}
 	
 	//This function is passed to FlxG.fade() when we are ready to go to the next game state.

@@ -262,10 +262,7 @@ class FlxSprite extends FlxObject
 		{
 			SimpleGraphic = FlxAssets.imgDefault;
 		}
-		else  
-		{
-			loadGraphic(SimpleGraphic);
-		}
+		loadGraphic(SimpleGraphic);
 	}
 	
 	/**
@@ -299,6 +296,10 @@ class FlxSprite extends FlxObject
 		_curAnim = null;
 		_matrix = null;
 		_callback = null;
+		if (framePixels != null)
+		{
+			framePixels.dispose();
+		}
 		framePixels = null;
 		
 		#if cpp
@@ -363,15 +364,6 @@ class FlxSprite extends FlxObject
 		height = frameHeight = Height;
 		resetHelpers();
 		
-		#if cpp
-		/*if (_tileSheetData != null)
-		{
-			TileSheetManager.removeTileSheet(_tileSheetData);
-		}*/
-		_tileSheetData = TileSheetManager.addTileSheet(_pixels);
-		_framesData = _tileSheetData.addSpriteFramesData(Math.floor(width), Math.floor(height), Reverse);
-		#end
-		
 		return this;
 	}
 	
@@ -398,7 +390,7 @@ class FlxSprite extends FlxObject
 		{
 			//Using just a segment of the graphic - find the right bit here
 			var full:BitmapData = brush;
-			brush = new BitmapData(full.height,full.height);
+			brush = new BitmapData(full.height, full.height);
 			var rx:Int = Frame * brush.width;
 			var ry:Int = 0;
 			var fw:Int = full.width;
@@ -420,17 +412,21 @@ class FlxSprite extends FlxObject
 			max = brush.height;
 		}
 		
-		#if flash
+	#if flash
 		if (AutoBuffer)
 		{
 			max = Math.floor(max * 1.5);
 		}
-		#end
+	#end
 		
 		var columns:Int = FlxU.ceil(Rotations / rows);
 		width = max * columns;
 		height = max * rows;
+	#if flash
 		var key:String = Type.getClassName(Graphic) + ":" + Frame + ":" + width + "x" + height;
+	#else
+		var key:String = Type.getClassName(Graphic) + ":" + Frame + ":" + width + "x" + height + ":" + Rotations;
+	#end
 		var skipGen:Bool = FlxG.checkBitmapCache(key);
 		_pixels = FlxG.createBitmap(Math.floor(width), Math.floor(height), 0, true, key);
 		width = frameWidth = _pixels.width;
@@ -455,7 +451,7 @@ class FlxSprite extends FlxObject
 					_matrix.identity();
 					_matrix.translate( -halfBrushWidth, -halfBrushHeight);
 					_matrix.rotate(bakedAngle * 0.017453293);
-					_matrix.translate(max*column+midpointX, midpointY);
+					_matrix.translate(max * column + midpointX, midpointY);
 					bakedAngle += _bakedRotation;
 					_pixels.draw(brush, _matrix, null, null, null, AntiAliasing);
 					column++;
@@ -475,14 +471,7 @@ class FlxSprite extends FlxObject
 		}
 		
 		#if cpp
-		/*if (_tileSheetData != null)
-		{
-			TileSheetManager.removeTileSheet(_tileSheetData);
-		}*/
-		_tileSheetData = TileSheetManager.addTileSheet(_pixels);
-		_tileSheetData.antialiasing = AntiAliasing;
 		_antialiasing = AntiAliasing;
-		_framesData = _tileSheetData.addSpriteFramesData(Math.floor(width), Math.floor(height));
 		#end
 		
 		return this;
@@ -498,9 +487,9 @@ class FlxSprite extends FlxObject
 	 * @return	This FlxSprite instance (nice for chaining stuff together, if you're into that).
 	 */
 	#if flash 
-	public function makeGraphic(Width:UInt, Height:UInt, Color:UInt = 0xffffffff, Unique:Bool = false, Key:String = null):FlxSprite
+	public function makeGraphic(Width:UInt, Height:UInt, ?Color:UInt = 0xffffffff, ?Unique:Bool = false, ?Key:String = null):FlxSprite
 	#else
-	public function makeGraphic(Width:Int, Height:Int, Color:Int = 0xffffffff, Unique:Bool = false, Key:String = null):FlxSprite
+	public function makeGraphic(Width:Int, Height:Int, ?Color:Int = 0xffffffff, ?Unique:Bool = false, ?Key:String = null):FlxSprite
 	#end
 	{
 		_bakedRotation = 0;
@@ -508,15 +497,6 @@ class FlxSprite extends FlxObject
 		width = frameWidth = _pixels.width;
 		height = frameHeight = _pixels.height;
 		resetHelpers();
-		
-		#if cpp
-		/*if (_tileSheetData != null)
-		{
-			TileSheetManager.removeTileSheet(_tileSheetData);
-		}*/
-		_tileSheetData = TileSheetManager.addTileSheet(_pixels);
-		_framesData = _tileSheetData.addSpriteFramesData(Math.floor(width), Math.floor(height));
-		#end
 		
 		return this;
 	}
@@ -1331,6 +1311,19 @@ class FlxSprite extends FlxObject
 	public function getSimpleRender():Bool
 	{ 
 		return (((angle == 0) || (_bakedRotation > 0)) && (scale.x == 1) && (scale.y == 1) && (blend == null));
+	}
+	
+	public function updateTileSheet():Void
+	{
+	#if cpp
+		if (_pixels != null && width > 1 && height > 1)
+		{
+			_tileSheetData = TileSheetManager.addTileSheet(_pixels);
+			_tileSheetData.antialiasing = _antialiasing;
+			var reverse:Bool = (_flipped > 0);
+			_framesData = _tileSheetData.addSpriteFramesData(Math.floor(frameWidth), Math.floor(frameHeight), reverse);
+		}
+	#end
 	}
 	
 }

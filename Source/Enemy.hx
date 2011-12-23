@@ -40,6 +40,7 @@ class Enemy extends FlxSprite
 	{
 		super();
 		loadRotatedGraphic(FlxAssets.imgBot, 64, 0, false, true);
+		updateTileSheet();
 
 		//We want the enemy's "hit box" or actual size to be
 		//smaller than the enemy graphic itself, just by a few pixels.
@@ -174,7 +175,10 @@ class Enemy extends FlxSprite
 				_jets.start(false, 0.5, 0.01);
 				if(onScreen())
 				{
-					FlxG.play(Assets.getSound("assets/jet.wav"));
+					if (Mode.SoundOn)
+					{
+						FlxG.play(Assets.getSound("assets/jet" + Mode.SoundExtension));
+					}
 				}
 			}
 			//Then, position the jets at the center of the Enemy,
@@ -204,7 +208,11 @@ class Enemy extends FlxSprite
 	//and damage is dealt to the Enemy.
 	override public function hurt(Damage:Float):Void
 	{
-		FlxG.play(Assets.getSound("assets/hit.wav"));
+		if (Mode.SoundOn)
+		{
+			FlxG.play(Assets.getSound("assets/hit" + Mode.SoundExtension));
+		}
+		
 		flicker(0.2);
 		FlxG.score += 10;
 		super.hurt(Damage);
@@ -218,7 +226,11 @@ class Enemy extends FlxSprite
 		{
 			return;
 		}
-		FlxG.play(Assets.getSound("assets/asplode.wav"));
+		if (Mode.SoundOn)
+		{
+			FlxG.play(Assets.getSound("assets/asplode" + Mode.SoundExtension));
+		}
+		
 		super.kill();
 		flicker(0);
 		_jets.kill();
@@ -231,10 +243,6 @@ class Enemy extends FlxSprite
 	//the Enemy's midpoint and the player's midpoint.
 	private function angleTowardPlayer():Float
 	{
-		#if flash
 		return FlxU.getAngle(getMidpoint(_point), _player.getMidpoint(_playerMidpoint));
-		#else
-		return FlxU.getAngle(getMidpoint(_point), _player.getMidpoint(_playerMidpoint)) + 180;
-		#end
 	}
 }

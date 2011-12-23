@@ -5,6 +5,7 @@ import org.flixel.FlxEmitter;
 import org.flixel.FlxG;
 import org.flixel.FlxState;
 import org.flixel.FlxText;
+import org.flixel.FlxTextField;
 
 class VictoryState extends FlxState
 {
@@ -28,7 +29,11 @@ class VictoryState extends FlxState
 		add(gibs);
 		gibs.start(false, 0, 0.005);
 		
+		#if flash
 		var text:FlxText = new FlxText(0, FlxG.height / 2 - 35, FlxG.width, "VICTORY\n\nSCORE: " + FlxG.score);
+		#else
+		var text:FlxTextField = new FlxTextField(0, FlxG.height / 2 - 35, FlxG.width, "VICTORY\n\nSCORE: " + FlxG.score);
+		#end
 		text.setFormat(null, 16, 0xd8eba2, "center");
 		add(text);
 	}
@@ -42,7 +47,11 @@ class VictoryState extends FlxState
 			if((_timer > 0.35) && ((_timer > 10) || FlxG.keys.justPressed("X") || FlxG.keys.justPressed("C")))
 			{
 				_fading = true;
-				FlxG.play(Assets.getSound("assets/menu_hit_2.wav"));
+				if (Mode.SoundOn)
+				{
+					FlxG.play(Assets.getSound("assets/menu_hit_2" + Mode.SoundExtension));
+				}
+				
 				FlxG.fade(0xff131c1b, 2, onPlay);
 			}
 		}

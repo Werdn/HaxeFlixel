@@ -60,7 +60,7 @@ class FlxText extends FlxSprite
 	#end
 	{
 		super(X, Y);
-		makeGraphic(Width,1,0);
+		makeGraphic(Width, 1, 0);
 		
 		if (Text == null)
 		{
@@ -106,6 +106,10 @@ class FlxText extends FlxSprite
 	 */
 	override public function destroy():Void
 	{
+		if (_pixels != null)
+		{
+			_pixels.dispose();
+		}
 		_textField = null;
 		super.destroy();
 	}

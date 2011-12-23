@@ -66,12 +66,26 @@ class TileSheetManager
 		}
 	}
 	
+	public static var counter:Int = 0;
+	
 	public static function renderAll():Void
 	{
 		var numCameras:Int = FlxG.cameras.length;
 		for (dataObject in tileSheetData)
 		{
 			dataObject.render(numCameras);
+		}
+		
+		counter++;
+		if (counter == 10)
+		{
+			/*trace("keys from FlxG._cache");
+			for (key in FlxG._cache.keys())
+			{
+				trace(key);
+			}*/
+			trace("Total number of tilesheets = " + tileSheetData.length);
+			counter = 0;
 		}
 	}
 	
@@ -210,6 +224,8 @@ class TileSheetManager
 			dataObject.destroy();
 		}
 		tileSheetData = new Array<TileSheetData>();
+		
+		counter = 0;
 	}
 	
 }

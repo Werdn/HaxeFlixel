@@ -1,6 +1,8 @@
 package;
 
 import nme.Assets;
+import nme.events.MouseEvent;
+import org.flixel.FlxButton;
 import org.flixel.FlxCamera;
 import org.flixel.FlxEmitter;
 import org.flixel.FlxG;
@@ -10,6 +12,7 @@ import org.flixel.FlxPoint;
 import org.flixel.FlxSprite;
 import org.flixel.FlxState;
 import org.flixel.FlxText;
+import org.flixel.FlxTextField;
 import org.flixel.FlxTileblock;
 import org.flixel.tileSheetManager.TileSheetData;
 import org.flixel.tileSheetManager.TileSheetManager;
@@ -34,13 +37,22 @@ class PlayState extends FlxState
 	private var _hazards:FlxGroup;
 	
 	//HUD/User Interface stuff
+	#if flash
 	private var _score:FlxText;
+	#else
+	private var _score:FlxTextField;
+	#end
 	private var _score2:FlxText;
 	private var _scoreTimer:Float;
 	private var _jamTimer:Float;
 	
 	//just to prevent weirdness during level transition
 	private var _fading:Bool;
+	
+	// touch interface
+	public static var LeftButton:FlxButton;
+	public static var RightButton:FlxButton;
+	public static var JumpButton:FlxButton;
 	
 	public function new()
 	{
@@ -49,7 +61,7 @@ class PlayState extends FlxState
 	
 	override public function create():Void
 	{
-		FlxG.mouse.hide();
+		//FlxG.mouse.hide();
 		
 		//Here we are creating a pool of 100 little metal bits that can be exploded.
 		//We will recycle the crap out of these!
@@ -74,9 +86,11 @@ class PlayState extends FlxState
 		_blocks = new FlxGroup();
 		_decorations = new FlxGroup();
 		_enemies = new FlxGroup();
+		_enemies.maxSize = 50;
 		_spawners = new FlxGroup();
 		_hud = new FlxGroup();
 		_enemyBullets = new FlxGroup();
+		_enemyBullets.maxSize = 100;
 		_bullets = new FlxGroup();
 		
 		//Now that we have references to the bullets and metal bits,
@@ -128,7 +142,11 @@ class PlayState extends FlxState
 		//From here on out we are making objects for the HUD,
 		//that is, the player score, number of spawners left, etc.
 		//First, we'll create a text field for the current score
+		#if flash
 		_score = new FlxText(FlxG.width / 4, 0, Math.floor(FlxG.width / 2));
+		#else
+		_score = new FlxTextField(FlxG.width / 4, 0, Math.floor(FlxG.width / 2));
+		#end
 		_score.setFormat(null, 16, 0xd8eba2, "center", 0x131c1b);
 		_hud.add(_score);
 		if(FlxG.scores.length < 2)
@@ -167,18 +185,56 @@ class PlayState extends FlxState
 		_hud.setAll("scrollFactor", new FlxPoint(0, 0));
 		_hud.setAll("cameras", [FlxG.camera]);
 		
-		FlxG.playMusic(Assets.getSound("assets/mode.wav"));
+		if (Mode.SoundOn)
+		{
+			FlxG.playMusic(Assets.getSound("assets/mode" + Mode.SoundExtension));
+		}
+		
 		FlxG.flash(0xff131c1b);
 		_fading = false;
+		
+		FlxG.sounds.maxSize = 30;
 		
 		//Debugger Watch examples
 		FlxG.watch(_player, "x");
 		FlxG.watch(_player, "y");
+		FlxG.watch(_enemies, "length", "numEnemies");
+		FlxG.watch(_enemyBullets, "length", "numEnemyBullets");
 		
 		#if cpp
 		TileSheetManager.setTileSheetIndex(_player.getTileSheetIndex(), TileSheetManager.getMaxIndex());
 		TileSheetManager.setTileSheetIndex(cast(_hud.getFirstAlive(), FlxSprite).getTileSheetIndex(), TileSheetManager.getMaxIndex());
 		#end
+		
+		LeftButton = new FlxButton(1000, 0, "Left");
+		LeftButton.scrollFactor = new FlxPoint(1.0, 1.0);
+		LeftButton.color = 0xff729954;
+		LeftButton.label.color = 0xffd8eba2;
+		add(LeftButton);
+		
+		var leftCam:FlxCamera = new FlxCamera(Math.floor(10 * FlxG.camera.zoom), Math.floor((FlxG.height - 20) * FlxG.camera.zoom), Math.floor(LeftButton.width), Math.floor(LeftButton.height));
+		leftCam.follow(LeftButton, FlxCamera.STYLE_NO_DEAD_ZONE);
+		FlxG.addCamera(leftCam);
+		
+		RightButton = new FlxButton(1000, 100, "Right");
+		RightButton.scrollFactor = new FlxPoint(1.0, 1.0);
+		RightButton.color = 0xff729954;
+		RightButton.label.color = 0xffd8eba2;
+		add(RightButton);
+		
+		var rightCam:FlxCamera = new FlxCamera(Math.floor(100 * FlxG.camera.zoom), Math.floor((FlxG.height - 20) * FlxG.camera.zoom), Math.floor(LeftButton.width), Math.floor(LeftButton.height));
+		rightCam.follow(RightButton, FlxCamera.STYLE_NO_DEAD_ZONE);
+		FlxG.addCamera(rightCam);
+		
+		JumpButton = new FlxButton(1000, 200, "Jump");
+		JumpButton.scrollFactor = new FlxPoint(1.0, 1.0);
+		JumpButton.color = 0xff729954;
+		JumpButton.label.color = 0xffd8eba2;
+		add(JumpButton);
+		
+		var jumpCam:FlxCamera = new FlxCamera(Math.floor((FlxG.width - 90) * FlxG.camera.zoom), Math.floor((FlxG.height - 20) * FlxG.camera.zoom), Math.floor(LeftButton.width), Math.floor(LeftButton.height));
+		jumpCam.follow(JumpButton, FlxCamera.STYLE_NO_DEAD_ZONE);
+		FlxG.addCamera(jumpCam);
 	}
 	
 	override public function destroy():Void
@@ -204,6 +260,10 @@ class PlayState extends FlxState
 		//HUD/User Interface stuff
 		_score = null;
 		_score2 = null;
+		
+		LeftButton = null;
+		RightButton = null;
+		JumpButton = null;
 	}
 
 	override public function update():Void
@@ -224,7 +284,7 @@ class PlayState extends FlxState
 		if(FlxG.keys.justPressed("C") && _player.flickering)
 		{
 			_jamTimer = 1;
-			_gunjam.visible = true;
+			//_gunjam.visible = true;
 		}
 		if(_jamTimer > 0)
 		{
@@ -235,7 +295,7 @@ class PlayState extends FlxState
 			_jamTimer -= FlxG.elapsed;
 			if(_jamTimer < 0)
 			{
-				_gunjam.visible = false;
+				//_gunjam.visible = false;
 			}
 		}
 
@@ -269,7 +329,10 @@ class PlayState extends FlxState
 					{
 						volume = 1.0;
 					}
-					FlxG.play(Assets.getSound("assets/countdown.wav"), volume);
+					if (Mode.SoundOn)
+					{
+						FlxG.play(Assets.getSound("assets/countdown" + Mode.SoundExtension), volume);
+					}
 				}
 			}
 		
@@ -302,7 +365,7 @@ class PlayState extends FlxState
 	//A FlxG.fade callback, like in MenuState.
 	private function onVictory():Void
 	{
-		FlxG.music.stop();
+		//FlxG.music.stop();
 		FlxG.switchState(new VictoryState());
 	}
 	
@@ -314,24 +377,29 @@ class PlayState extends FlxState
 		var b:FlxTileblock;
 	
 		//First, we create the walls, ceiling and floors:
-		b = new FlxTileblock(0,0,640,16);
+		b = new FlxTileblock(0, 0, 640, 16);
 		b.loadTiles(FlxAssets.imgTechTiles);
+		b.updateTileSheet();
 		_blocks.add(b);
 		
-		b = new FlxTileblock(0,16,16,640-16);
+		b = new FlxTileblock(0, 16, 16, 640 - 16);
 		b.loadTiles(FlxAssets.imgTechTiles);
+		b.updateTileSheet();
 		_blocks.add(b);
 		
-		b = new FlxTileblock(640-16,16,16,640-16);
+		b = new FlxTileblock(640 - 16, 16, 16, 640 - 16);
 		b.loadTiles(FlxAssets.imgTechTiles);
+		b.updateTileSheet();
 		_blocks.add(b);
 		
-		b = new FlxTileblock(16,640-24,640-32,8);
+		b = new FlxTileblock(16, 640 - 24, 640 - 32, 8);
 		b.loadTiles(FlxAssets.imgDirtTop);
+		b.updateTileSheet();
 		_blocks.add(b);
 		
-		b = new FlxTileblock(16,640-16,640-32,16);
+		b = new FlxTileblock(16, 640 - 16, 640 - 32, 16);
 		b.loadTiles(FlxAssets.imgDirt);
+		b.updateTileSheet();
 		_blocks.add(b);
 		
 		//Then we split the game world up into a 4x4 grid,
@@ -402,6 +470,7 @@ class PlayState extends FlxState
 			var b:FlxTileblock;
 			b = new FlxTileblock(RX + bx * 8, RY + by * 8, bw * 8, bh * 8);
 			b.loadTiles(FlxAssets.imgTechTiles);
+			b.updateTileSheet();
 			_blocks.add(b);
 			
 			//If the block has room, add some non-colliding "dirt" graphics for variety
@@ -409,10 +478,12 @@ class PlayState extends FlxState
 			{
 				b = new FlxTileblock(RX + bx * 8 + 8, RY + by * 8, bw * 8 - 16, 8);
 				b.loadTiles(FlxAssets.imgDirtTop);
+				b.updateTileSheet();
 				_decorations.add(b);
 				
 				b = new FlxTileblock(RX + bx * 8 + 8, RY + by * 8 + 8, bw * 8 - 16, bh * 8 - 24);
 				b.loadTiles(FlxAssets.imgDirt);
+				b.updateTileSheet();
 				_decorations.add(b);
 			}
 		}
@@ -424,7 +495,9 @@ class PlayState extends FlxState
 			_spawners.add(sp);
 			
 			//Then create a dedicated camera to watch the spawner
-			_hud.add(new FlxSprite(3 + (_spawners.length - 1) * 16, 3, FlxAssets.imgMiniFrame));
+			var miniFrame:FlxSprite = new FlxSprite(3 + (_spawners.length - 1) * 16, 3, FlxAssets.imgMiniFrame);
+			miniFrame.updateTileSheet();
+			_hud.add(miniFrame);
 			var camera:FlxCamera = new FlxCamera(10 + (_spawners.length - 1) * 32, 10, 24, 24, 1);
 			camera.follow(sp, FlxCamera.STYLE_NO_DEAD_ZONE);
 			FlxG.addCamera(camera);

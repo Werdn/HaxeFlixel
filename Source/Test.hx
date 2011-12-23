@@ -1,9 +1,14 @@
 package;
 
+import nme.display.BitmapData;
 import nme.display.StageAlign;
 import nme.display.StageScaleMode;
 import nme.display.FPS;
 import nme.display.Sprite;
+import nme.display.Tilesheet;
+import nme.events.Event;
+import nme.geom.Point;
+import nme.geom.Rectangle;
 import nme.Lib;
 
 import org.flixel.FlxGame;
@@ -13,7 +18,7 @@ import org.flixel.FlxGame;
  */
 class Test extends Sprite 
 {
-		
+	
 	public function new () 
 	{
 		super();
@@ -31,8 +36,8 @@ class Test extends Sprite
 	
 	private function initialize():Void 
 	{
-		Lib.current.stage.align = StageAlign.TOP_LEFT;
-		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
+		//Lib.current.stage.align = StageAlign.TOP_LEFT;
+		//Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
 	}
 	
 	// Entry point

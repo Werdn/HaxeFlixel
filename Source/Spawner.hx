@@ -20,6 +20,7 @@ class Spawner extends FlxSprite
 	{
 		super(X, Y);
 		loadGraphic(FlxAssets.imgSpawner, true);
+		updateTileSheet();
 		_gibs = Gibs;
 		_bots = Bots;
 		_botBullets = BotBullets;
@@ -79,7 +80,11 @@ class Spawner extends FlxSprite
 	
 	override public function hurt(Damage:Float):Void
 	{
-		FlxG.play(Assets.getSound("assets/hit.wav"));
+		if (Mode.SoundOn)
+		{
+			FlxG.play(Assets.getSound("assets/hit" + Mode.SoundExtension));
+		}
+		
 		flicker(0.2);
 		FlxG.score += 50;
 		super.hurt(Damage);
@@ -91,8 +96,12 @@ class Spawner extends FlxSprite
 		{
 			return;
 		}
-		FlxG.play(Assets.getSound("assets/asplode.wav"));
-		FlxG.play(Assets.getSound("assets/menu_hit_2.wav"));
+		if (Mode.SoundOn)
+		{
+			FlxG.play(Assets.getSound("assets/asplode" + Mode.SoundExtension));
+			FlxG.play(Assets.getSound("assets/menu_hit_2" + Mode.SoundExtension));
+		}
+		
 		super.kill();
 		active = false;
 		exists = true;

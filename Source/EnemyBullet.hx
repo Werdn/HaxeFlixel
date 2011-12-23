@@ -14,6 +14,7 @@ class EnemyBullet extends FlxSprite
 	{
 		super();
 		loadGraphic(FlxAssets.imgBotBullet, true);
+		updateTileSheet();
 		addAnimation("idle",[0, 1], 50);
 		addAnimation("poof",[2, 3, 4], 50, false);
 		speed = 120;
@@ -44,7 +45,10 @@ class EnemyBullet extends FlxSprite
 		velocity.y = 0;
 		if(onScreen())
 		{
-			FlxG.play(Assets.getSound("assets/jump.wav"));
+			if (Mode.SoundOn)
+			{
+				FlxG.play(Assets.getSound("assets/jump" + Mode.SoundExtension));
+			}
 		}
 		alive = false;
 		solid = false;
@@ -53,7 +57,11 @@ class EnemyBullet extends FlxSprite
 	
 	public function shoot(Location:FlxPoint, Angle:Float):Void
 	{
-		FlxG.play(Assets.getSound("assets/enemy.wav"), 0.5);
+		if (Mode.SoundOn)
+		{
+			FlxG.play(Assets.getSound("assets/enemy" + Mode.SoundExtension), 0.5);
+		}
+		
 		super.reset(Location.x - width / 2, Location.y - height / 2);
 		FlxU.rotatePoint(0, speed, 0, 0, Angle, _point);
 		velocity.x = _point.x;
