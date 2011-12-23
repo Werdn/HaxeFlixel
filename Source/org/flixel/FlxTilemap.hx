@@ -304,14 +304,7 @@ class FlxTilemap extends FlxObject
 			i++;
 		}
 		
-		#if cpp
-		/*if (_tileSheetData != null)
-		{
-			TileSheetManager.removeTileSheet(_tileSheetData);
-		}*/
-		_tileSheetData = TileSheetManager.addTileSheet(_tiles, true);
-		_framesData = _tileSheetData.addSpriteFramesData(_tileWidth, _tileHeight, false, new Point(0, 0));
-		#end
+		updateTileSheet();
 		
 		//create debug tiles for rendering bounding boxes on demand
 		#if flash
@@ -1751,5 +1744,16 @@ class FlxTilemap extends FlxObject
 		return -1;
 	}
 	#end
+	
+	public function updateTileSheet():Void
+	{
+	#if cpp
+		if (_tiles != null && _tileWidth > 1 && _tileHeight > 1)
+		{
+			_tileSheetData = TileSheetManager.addTileSheet(_tiles, true);
+			_framesData = _tileSheetData.addSpriteFramesData(_tileWidth, _tileHeight, false, new Point(0, 0));
+		}
+	#end
+	}
 	
 }

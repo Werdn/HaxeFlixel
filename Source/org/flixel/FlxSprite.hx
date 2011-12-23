@@ -1316,7 +1316,7 @@ class FlxSprite extends FlxObject
 	public function updateTileSheet():Void
 	{
 	#if cpp
-		if (_pixels != null && width > 1 && height > 1)
+		if (_pixels != null && frameWidth > 1 && frameHeight > 1)
 		{
 			_tileSheetData = TileSheetManager.addTileSheet(_pixels);
 			_tileSheetData.antialiasing = _antialiasing;
