@@ -20,7 +20,7 @@ import nme.ui.Mouse;
 import org.flixel.tileSheetManager.TileSheetManager;
 #end
 
-#if flash
+#if (flash || js)
 import flash.text.AntiAliasType;
 import flash.text.GridFitType;
 #end
@@ -753,7 +753,7 @@ class FlxGame extends Sprite
 		stage.frameRate = _flashFramerate;
 		
 		//Add basic input event listeners and mouse container
-		#if flash
+		#if (flash || js)
 		Lib.current.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		Lib.current.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 		Lib.current.stage.addEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel);
@@ -781,7 +781,7 @@ class FlxGame extends Sprite
 			if(FlxG.debug || forceDebugger)
 			{
 				_debugger = new FlxDebugger(FlxG.width * FlxCamera.defaultZoom, FlxG.height * FlxCamera.defaultZoom);
-				#if flash
+				#if (flash || js)
 				addChild(_debugger);
 				#else
 				Lib.current.stage.addChild(_debugger);
@@ -819,13 +819,16 @@ class FlxGame extends Sprite
 		text.multiline = true;
 		text.wordWrap = true;
 		text.selectable = false;
+		
 		#if flash
 		text.embedFonts = true;
+		#end
+		
+		#if (flash || js)
 		text.antiAliasType = AntiAliasType.NORMAL;
 		text.gridFitType = GridFitType.PIXEL;
-		#else
-		
 		#end
+		
 		var dtf:TextFormat = new TextFormat(FlxAssets.nokiaFont, 8, 0xffffff);
 		dtf.align = TextFormatAlign.CENTER;
 		text.defaultTextFormat = dtf; //new TextFormat("system",8,0xffffff,null,null,null,null,null,"center");

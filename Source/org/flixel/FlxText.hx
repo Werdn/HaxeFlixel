@@ -53,12 +53,10 @@ class FlxText extends FlxSprite
 	 * @param	Text			The actual text you would like to display initially.
 	 * @param	EmbeddedFont	Whether this text field uses embedded fonts or nto
 	 */
-	#if flash
-	public function new(X:Float, Y:Float, Width:UInt, ?Text:String = null, ?EmbeddedFont:Bool = true)
-	#else
 	public function new(X:Float, Y:Float, Width:Int, ?Text:String = null, ?EmbeddedFont:Bool = true)
-	#end
 	{
+		Width = FlxU.fromIntToUInt(Width);
+		
 		super(X, Y);
 		makeGraphic(Width, 1, 0);
 		
@@ -91,7 +89,7 @@ class FlxText extends FlxSprite
 		_regen = true;
 		_shadow = 0;
 		allowCollisions = FlxObject.NONE;
-		#if flash
+		#if (flash || js)
 		calcFrame();
 		#else
 		if (Text != "")
@@ -147,7 +145,7 @@ class FlxText extends FlxSprite
 		_textField.setTextFormat(format);
 		_shadow = ShadowColor;
 		_regen = true;
-		#if flash
+		#if (flash || js)
 		calcFrame();
 		#else
 		calcFrame(true);
@@ -175,7 +173,7 @@ class FlxText extends FlxSprite
 		if(_textField.text != ot)
 		{
 			_regen = true;
-			#if flash
+			#if (flash || js)
 			calcFrame();
 			#else
 			calcFrame(true);
@@ -204,7 +202,7 @@ class FlxText extends FlxSprite
 		_textField.defaultTextFormat = format;
 		_textField.setTextFormat(format);
 		_regen = true;
-		#if flash
+		#if (flash || js)
 		calcFrame();
 		#else
 		calcFrame(true);
@@ -242,7 +240,7 @@ class FlxText extends FlxSprite
 		_textField.defaultTextFormat = format;
 		_textField.setTextFormat(format);
 		_regen = true;
-		#if flash
+		#if (flash || js)
 		calcFrame();
 		#else
 		calcFrame(true);
@@ -270,7 +268,7 @@ class FlxText extends FlxSprite
 		_textField.defaultTextFormat = format;
 		_textField.setTextFormat(format);
 		_regen = true;
-		#if flash
+		#if (flash || js)
 		calcFrame();
 		#else
 		calcFrame(true);
@@ -297,7 +295,7 @@ class FlxText extends FlxSprite
 		format.align = convertTextAlignmentFromString(Alignment);
 		_textField.defaultTextFormat = format;
 		_textField.setTextFormat(format);
-		#if flash
+		#if (flash || js)
 		calcFrame();
 		#else
 		calcFrame(true);
@@ -327,7 +325,7 @@ class FlxText extends FlxSprite
 	#end
 	{
 		_shadow = Color;
-		#if flash
+		#if (flash || js)
 		calcFrame();
 		#else
 		calcFrame(true);
@@ -338,7 +336,7 @@ class FlxText extends FlxSprite
 	/**
 	 * Internal function to update the current animation frame.
 	 */
-	#if flash
+	#if (flash || js)
 	override private function calcFrame():Void
 	#else
 	override private function calcFrame(?AreYouSure:Bool = false):Void
@@ -434,7 +432,7 @@ class FlxText extends FlxSprite
 	/**
 	 * Method for converting string to TextFormatAlign
 	 */
-	#if flash
+	#if (flash || js)
 	private function convertTextAlignmentFromString(strAlign:String):TextFormatAlign
 	{
 		if (strAlign == "right")

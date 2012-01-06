@@ -650,7 +650,9 @@ class FlxU
 		}
 		
 		var dx:Float = X - PivotX;
-		var dy:Float = PivotY + Y; //Y axis is inverted in flash, normally this would be a subtract operation
+		// TODO: Uncomment this line if there will be problems
+		//var dy:Float = PivotY + Y; //Y axis is inverted in flash, normally this would be a subtract operation
+		var dy:Float = Y - PivotY;
 		if (point == null)
 		{
 			point = new FlxPoint();
@@ -743,6 +745,11 @@ class FlxU
 			}
 		}
 		
+	}
+	
+	static public function fromIntToUInt(number:Int):Int
+	{
+		return ((number < 0) ? -number : number);
 	}
 	
 	#if flash

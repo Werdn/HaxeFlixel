@@ -71,7 +71,7 @@ class FlxCamera extends FlxBasic
 	/**
 	 * How wide the camera display is, in game pixels.
 	 */
-	#if flash
+	#if (flash || js)
 	public var width:Int;
 	#else
 	private var _width:Int;
@@ -79,7 +79,7 @@ class FlxCamera extends FlxBasic
 	/**
 	 * How tall the camera display is, in game pixels.
 	 */
-	#if flash
+	#if (flash || js)
 	public var height:Int;
 	#else
 	private var _height:Int;
@@ -113,7 +113,7 @@ class FlxCamera extends FlxBasic
 	 */
 	public var scroll:FlxPoint;
 	
-	#if flash
+	#if (flash || js)
 	/**
 	 * The actual bitmap data of the camera display itself.
 	 */
@@ -130,7 +130,7 @@ class FlxCamera extends FlxBasic
 	public var bgColor:Int;
 	#end
 	
-	#if flash
+	#if (flash || js)
 	/**
 	 * Sometimes it's easier to just work with a <code>FlxSprite</code> than it is to work
 	 * directly with the <code>BitmapData</code> buffer.  This sprite reference will
@@ -156,7 +156,7 @@ class FlxCamera extends FlxBasic
 	private var _color:Int;
 	#end
 	
-	#if flash
+	#if (flash || js)
 	/**
 	 * Internal, used to render buffer to screen space.
 	 */
@@ -271,6 +271,11 @@ class FlxCamera extends FlxBasic
 	#end
 	
 	/**
+     * Internal, used to control the "fade" special effect.
+     */
+    private var _fxFadeIn:Bool;
+	
+	/**
 	 * Instantiates a new camera at the specified location, with the specified size and zoom level.
 	 * @param X			X location of the camera's display in pixels. Uses native, 1:1 resolution, ignores zoom.
 	 * @param Y			Y location of the camera's display in pixels. Uses native, 1:1 resolution, ignores zoom.
@@ -293,7 +298,7 @@ class FlxCamera extends FlxBasic
 		scroll = new FlxPoint();
 		_point = new FlxPoint();
 		bounds = null;
-		#if flash
+		#if (flash || js)
 		screen = new FlxSprite();
 		screen.makeGraphic(width, height, 0, true);
 		screen.setOriginToCorner();
@@ -301,7 +306,7 @@ class FlxCamera extends FlxBasic
 		#end
 		bgColor = FlxG.bgColor;
 		_color = 0xffffff;
-		#if flash
+		#if (flash || js)
 		_flashBitmap = new Bitmap(buffer);
 		_flashBitmap.x = -width * 0.5;
 		_flashBitmap.y = -height * 0.5;
@@ -319,7 +324,7 @@ class FlxCamera extends FlxBasic
 		_flashSprite.x = x + _flashOffsetX;
 		_flashSprite.y = y + _flashOffsetY;
 		
-		#if flash
+		#if (flash || js)
 		_flashSprite.addChild(_flashBitmap);
 		#else
 		_flashSprite.addChild(_canvas);
@@ -360,6 +365,8 @@ class FlxCamera extends FlxBasic
 		
 		_fog = 0.0;
 		#end
+		
+		_fxFadeIn = false;
 	}
 	
 	/**
@@ -367,7 +374,7 @@ class FlxCamera extends FlxBasic
 	 */
 	override public function destroy():Void
 	{
-		#if flash
+		#if (flash || js)
 		screen.destroy();
 		screen = null;
 		#end
@@ -375,7 +382,7 @@ class FlxCamera extends FlxBasic
 		scroll = null;
 		deadzone = null;
 		bounds = null;
-		#if flash
+		#if (flash || js)
 		buffer = null;
 		_flashBitmap = null;
 		#end
@@ -513,13 +520,28 @@ class FlxCamera extends FlxBasic
 		//Update the "fade" special effect
 		if((_fxFadeAlpha > 0.0) && (_fxFadeAlpha < 1.0))
 		{
-			_fxFadeAlpha += FlxG.elapsed / _fxFadeDuration;
-			if(_fxFadeAlpha >= 1.0)
+			if (_fxFadeIn)
 			{
-				_fxFadeAlpha = 1.0;
-				if (_fxFadeComplete != null)
+				_fxFadeAlpha -= FlxG.elapsed /_fxFadeDuration;
+                if(_fxFadeAlpha <= 0.0)
+                {
+                    _fxFadeAlpha = 0.0;
+                    if(_fxFadeComplete != null)
+                    {
+						_fxFadeComplete();
+					}
+                }
+			}
+			else
+			{
+				_fxFadeAlpha += FlxG.elapsed / _fxFadeDuration;
+				if(_fxFadeAlpha >= 1.0)
 				{
-					_fxFadeComplete();
+					_fxFadeAlpha = 1.0;
+					if (_fxFadeComplete != null)
+					{
+						_fxFadeComplete();
+					}
 				}
 			}
 		}
@@ -652,13 +674,14 @@ class FlxCamera extends FlxBasic
 	 * The screen is gradually filled with this color.
 	 * @param	Color		The color you want to use.
 	 * @param	Duration	How long it takes for the fade to finish.
+	 * @param   FadeIn      True fades from a color, false fades to it.
 	 * @param	OnComplete	A function you want to run when the fade finishes.
 	 * @param	Force		Force the effect to reset.
 	 */
 	#if flash
-	public function fade(?Color:UInt = 0xff000000, ?Duration:Float = 1, ?OnComplete:Dynamic = null, ?Force:Bool = false):Void
+	public function fade(?Color:UInt = 0xff000000, ?Duration:Float = 1, ?FadeIn:Bool = false, ?OnComplete:Dynamic = null, ?Force:Bool = false):Void
 	#else
-	public function fade(?Color:Int = 0xff000000, ?Duration:Float = 1, ?OnComplete:Dynamic = null, ?Force:Bool = false):Void
+	public function fade(?Color:Int = 0xff000000, ?Duration:Float = 1, ?FadeIn:Bool = false, ?OnComplete:Dynamic = null, ?Force:Bool = false):Void
 	#end
 	{
 		if (!Force && (_fxFadeAlpha > 0.0))
@@ -670,9 +693,19 @@ class FlxCamera extends FlxBasic
 		{
 			Duration = FlxU.MIN_VALUE;
 		}
+		
+		_fxFadeIn = FadeIn;
 		_fxFadeDuration = Duration;
 		_fxFadeComplete = OnComplete;
-		_fxFadeAlpha = FlxU.MIN_VALUE;
+		
+		if (_fxFadeIn)
+		{
+			_fxFadeAlpha = 0.999999;
+		}
+		else
+		{
+			_fxFadeAlpha = FlxU.MIN_VALUE;
+		}
 	}
 	
 	/**
@@ -780,7 +813,7 @@ class FlxCamera extends FlxBasic
 	 */
 	public function getAlpha():Float
 	{
-		#if flash
+		#if (flash || js)
 		return _flashBitmap.alpha;
 		#else
 		return _canvas.alpha;
@@ -792,7 +825,7 @@ class FlxCamera extends FlxBasic
 	 */
 	public function setAlpha(Alpha:Float):Float
 	{
-		#if flash
+		#if (flash || js)
 		_flashBitmap.alpha = Alpha;
 		#else
 		_canvas.alpha = Alpha;
@@ -849,7 +882,7 @@ class FlxCamera extends FlxBasic
 	#end
 	{
 		_color = Color;
-		#if flash
+		#if (flash || js)
 		var colorTransform:ColorTransform = _flashBitmap.transform.colorTransform;
 		colorTransform.redMultiplier = (_color >> 16) * 0.00392;
 		colorTransform.greenMultiplier = (_color >> 8 & 0xff) * 0.0039;
@@ -874,7 +907,7 @@ class FlxCamera extends FlxBasic
 	 */
 	public function getAntialiasing():Bool
 	{
-		#if flash
+		#if (flash || js)
 		return _flashBitmap.smoothing;
 		#else
 		return _antialiasing;
@@ -886,7 +919,7 @@ class FlxCamera extends FlxBasic
 	 */
 	public function setAntialiasing(Antialiasing:Bool):Bool
 	{
-		#if flash
+		#if (flash || js)
 		_flashBitmap.smoothing = Antialiasing;
 		#else
 		_antialiasing = Antialiasing;
@@ -941,7 +974,7 @@ class FlxCamera extends FlxBasic
 	public function fill(Color:Int, ?BlendAlpha:Bool = true, ?FxAlpha:Float = 1.0):Void
 	#end
 	{
-		#if flash
+		#if (flash || js)
 		_fill.fillRect(_flashRect, Color);
 		buffer.copyPixels(_fill, _flashRect, _flashPoint, null, null, BlendAlpha);
 		#else
@@ -980,7 +1013,7 @@ class FlxCamera extends FlxBasic
 		if(_fxFlashAlpha > 0.0)
 		{
 			alphaComponent = _fxFlashColor >> 24;
-			#if flash
+			#if (flash || js)
 			fill((Std.int(((alphaComponent <= 0) ? 0xff : alphaComponent) * _fxFlashAlpha) << 24) + (_fxFlashColor & 0x00ffffff));
 			#else
 			fill((_fxFlashColor & 0x00ffffff), true, ((alphaComponent <= 0) ? 0xff : alphaComponent) * _fxFlashAlpha / 255);
@@ -991,7 +1024,7 @@ class FlxCamera extends FlxBasic
 		if(_fxFadeAlpha > 0.0)
 		{
 			alphaComponent = _fxFadeColor >> 24;
-			#if flash
+			#if (flash || js)
 			fill((Std.int(((alphaComponent <= 0) ?0xff : alphaComponent) * _fxFadeAlpha) << 24) + (_fxFadeColor & 0x00ffffff));
 			#else
 			fill((_fxFadeColor & 0x00ffffff), true, ((alphaComponent <= 0) ?0xff : alphaComponent) * _fxFadeAlpha / 255);

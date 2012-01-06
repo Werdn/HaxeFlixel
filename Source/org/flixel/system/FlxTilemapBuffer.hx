@@ -43,7 +43,7 @@ class FlxTilemapBuffer
 	 */
 	public var columns:Int;
 	
-	#if flash
+	#if (flash || js)
 	private var _pixels:BitmapData;	
 	private var _flashRect:Rectangle;
 	#end
@@ -76,7 +76,7 @@ class FlxTilemapBuffer
 		{
 			rows = HeightInTiles;
 		}
-		#if flash
+		#if (flash || js)
 		_pixels = new BitmapData(Std.int(columns * TileWidth), Std.int(rows * TileHeight), true, 0);
 		width = _pixels.width;
 		height = _pixels.height;	
@@ -93,7 +93,7 @@ class FlxTilemapBuffer
 	 */
 	public function destroy():Void
 	{
-		#if flash
+		#if (flash || js)
 		_pixels = null;
 		#end
 	}
@@ -105,10 +105,16 @@ class FlxTilemapBuffer
 	 */
 	#if flash
 	public function fill(?Color:UInt = 0):Void
+	#elseif js
+	public function fill(?Color:Int = 0):Void
+	#end
+	#if (flash || js)
 	{
 		_pixels.fillRect(_flashRect, Color);
 	}
+	#end
 	
+	#if (flash || js)
 	public var pixels(getPixels, null):BitmapData;
 	
 	/**

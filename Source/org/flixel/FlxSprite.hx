@@ -13,7 +13,7 @@ import org.flixel.tileSheetManager.TileSheetData;
 import org.flixel.tileSheetManager.TileSheetManager;
 #end
 
-#if flash
+#if (flash || js)
 import flash.display.BlendMode;
 #end
 
@@ -60,7 +60,7 @@ class FlxSprite extends FlxObject
 	 * E.g. "multiply", "screen", etc.
 	 * @default null
 	 */
-	#if flash
+	#if (flash || js)
 	public var blend:BlendMode;
 	#else
 	public var blend:String;
@@ -69,7 +69,7 @@ class FlxSprite extends FlxObject
 	 * Controls whether the object is smoothed when rotated, affects performance.
 	 * @default false
 	 */
-	#if flash
+	#if (flash || js)
 	public var antialiasing:Bool;
 	#else
 	private var _antialiasing:Bool;
@@ -222,7 +222,7 @@ class FlxSprite extends FlxObject
 	 * @param	Y				The initial Y position of the sprite.
 	 * @param	SimpleGraphic	The graphic you want to display (OPTIONAL - for simple stuff only, do NOT use for animated images!).
 	 */
-	public function new(?X:Float = 0, ?Y:Float = 0, ?SimpleGraphic:Class<Bitmap> = null)
+	public function new(?X:Float = 0, ?Y:Float = 0, ?SimpleGraphic:Dynamic = null)
 	{
 		super(X, Y);
 		
@@ -306,6 +306,8 @@ class FlxSprite extends FlxObject
 		_framesData = null;
 		_tileSheetData = null;
 		#end
+		
+		super.destroy();
 	}
 	
 	/**
@@ -318,12 +320,11 @@ class FlxSprite extends FlxObject
 	 * @param	Unique		Optional, whether the graphic should be a unique instance in the graphics cache.  Default is false.
 	 * @return	This FlxSprite instance (nice for chaining stuff together, if you're into that).
 	 */
-	#if flash 
-	public function loadGraphic(Graphic:Class<Bitmap>, ?Animated:Bool = false, ?Reverse:Bool = false, Width:UInt = 0, ?Height:UInt = 0, ?Unique:Bool = false):FlxSprite
-	#else
-	public function loadGraphic(Graphic:Class<Bitmap>, ?Animated:Bool = false, ?Reverse:Bool = false, Width:Int = 0, ?Height:Int = 0, ?Unique:Bool = false):FlxSprite
-	#end
+	public function loadGraphic(Graphic:Dynamic, ?Animated:Bool = false, ?Reverse:Bool = false, Width:Int = 0, ?Height:Int = 0, ?Unique:Bool = false):FlxSprite
 	{
+		Width = FlxU.fromIntToUInt(Width);
+		Height = FlxU.fromIntToUInt(Height);
+		
 		_bakedRotation = 0;
 		_pixels = FlxG.addBitmap(Graphic, Reverse, Unique);
 		if (Reverse)
@@ -377,12 +378,10 @@ class FlxSprite extends FlxObject
 	 * @param	AutoBuffer		Whether to automatically increase the image size to accomodate rotated corners.  Default is false.  Will create frames that are 150% larger on each axis than the original frame or graphic.
 	 * @return	This FlxSprite instance (nice for chaining stuff together, if you're into that).
 	 */
-	#if flash
-	public function loadRotatedGraphic(Graphic:Class<Bitmap>,?Rotations:UInt = 16, ?Frame:Int = -1, ?AntiAliasing:Bool = false, ?AutoBuffer:Bool = false):FlxSprite
-	#else
-	public function loadRotatedGraphic(Graphic:Class<Bitmap>, ?Rotations:Int = 16, ?Frame:Int = -1, ?AntiAliasing:Bool = false, ?AutoBuffer:Bool = false):FlxSprite
-	#end
+	public function loadRotatedGraphic(Graphic:Dynamic, ?Rotations:Int = 16, ?Frame:Int = -1, ?AntiAliasing:Bool = false, ?AutoBuffer:Bool = false):FlxSprite
 	{
+		Rotations = FlxU.fromIntToUInt(Rotations);
+		
 		//Create the brush and canvas
 		var rows:Int = Math.floor(Math.sqrt(Rotations));
 		var brush:BitmapData = FlxG.addBitmap(Graphic);
@@ -412,7 +411,7 @@ class FlxSprite extends FlxObject
 			max = brush.height;
 		}
 		
-	#if flash
+	#if (flash || js)
 		if (AutoBuffer)
 		{
 			max = Math.floor(max * 1.5);
@@ -422,10 +421,19 @@ class FlxSprite extends FlxObject
 		var columns:Int = FlxU.ceil(Rotations / rows);
 		width = max * columns;
 		height = max * rows;
-	#if flash
-		var key:String = Type.getClassName(Graphic) + ":" + Frame + ":" + width + "x" + height;
+		var key:String = "";
+		if (Std.is(Graphic, String))
+		{
+			key = Graphic;
+		}
+		else if (Std.is(Graphic, Class))
+		{
+			key = Type.getClassName(Graphic);
+		}
+	#if (flash || js)
+		key += ":" + Frame + ":" + width + "x" + height;
 	#else
-		var key:String = Type.getClassName(Graphic) + ":" + Frame + ":" + width + "x" + height + ":" + Rotations;
+		key += ":" + Frame + ":" + width + "x" + height + ":" + Rotations;
 	#end
 		var skipGen:Bool = FlxG.checkBitmapCache(key);
 		_pixels = FlxG.createBitmap(Math.floor(width), Math.floor(height), 0, true, key);
@@ -579,13 +587,13 @@ class FlxSprite extends FlxObject
 			}
 			_point.x = x - Math.floor(camera.scroll.x * scrollFactor.x) - Math.floor(offset.x);
 			_point.y = y - Math.floor(camera.scroll.y * scrollFactor.y) - Math.floor(offset.y);
-			#if flash
+			#if (flash || js)
 			_point.x += (_point.x > 0)?0.0000001:-0.0000001;
 			_point.y += (_point.y > 0)?0.0000001: -0.0000001;
 			#end
 			if (simpleRender)
 			{	//Simple render
-				#if flash
+				#if (flash || js)
 				_flashPoint.x = _point.x;
 				_flashPoint.y = _point.y;
 				camera.buffer.copyPixels(framePixels, _flashRect, _flashPoint, null, null, true);
@@ -616,7 +624,7 @@ class FlxSprite extends FlxObject
 			}
 			else
 			{	//Advanced render
-				#if flash
+				#if (flash || js)
 				_matrix.identity();
 				_matrix.translate( -origin.x, -origin.y);
 				_matrix.scale(scale.x, scale.y);
@@ -635,7 +643,7 @@ class FlxSprite extends FlxObject
 					_tileSheetData.drawData[camID].push(_framesData.frameIDs[_curIndex]);
 					
 					_tileSheetData.drawData[camID].push(scale.x); // scale
-					_tileSheetData.drawData[camID].push(angle * 0.017453293); // rotation
+					_tileSheetData.drawData[camID].push(-angle * 0.017453293); // rotation
 					_tileSheetData.drawData[camID].push(_red * camera.red); 
 					_tileSheetData.drawData[camID].push(_green * camera.green);
 					_tileSheetData.drawData[camID].push(_blue * camera.blue);
@@ -673,7 +681,7 @@ class FlxSprite extends FlxObject
 			_pixels.copyPixels(bitmapData, _flashRect2, _flashPoint, null, null, true);
 			_flashRect2.width = _pixels.width;
 			_flashRect2.height = _pixels.height;
-			#if flash
+			#if (flash || js)
 			calcFrame();
 			#end
 			return;
@@ -688,13 +696,13 @@ class FlxSprite extends FlxObject
 			_matrix.rotate(Brush.angle * 0.017453293);
 		}
 		_matrix.translate(X + Brush.origin.x, Y + Brush.origin.y);
-		#if flash
+		#if (flash || js)
 		var brushBlend:BlendMode = cast(Brush.blend, BlendMode);
 		#else
 		var brushBlend:String = Brush.blend;
 		#end
 		_pixels.draw(bitmapData, _matrix, null, brushBlend, null, Brush.antialiasing);
-		#if flash
+		#if (flash || js)
 		calcFrame();
 		#end
 	}
@@ -816,7 +824,7 @@ class FlxSprite extends FlxObject
 	 */
 	public function drawFrame(?Force:Bool = false):Void
 	{
-		#if flash
+		#if (flash || js)
 		if (Force || dirty)
 		{
 			calcFrame();
@@ -833,13 +841,9 @@ class FlxSprite extends FlxObject
 	 * @param	FrameRate	The speed in frames per second that the animation should play at (e.g. 40 fps).
 	 * @param	Looped		Whether or not the animation is looped or just plays once.
 	 */
-	#if flash
-	public function addAnimation(Name:String, Frames:Array<Int>, ?FrameRate:UInt = 0, ?Looped:Bool = true):Void
-	#else
 	public function addAnimation(Name:String, Frames:Array<Int>, ?FrameRate:Int = 0, ?Looped:Bool = true):Void
-	#end
 	{
-		_animations.push(new FlxAnim(Name, Frames, FrameRate, Looped));
+		_animations.push(new FlxAnim(Name, Frames, FlxU.fromIntToUInt(FrameRate), Looped));
 	}
 	
 	/**
@@ -859,7 +863,7 @@ class FlxSprite extends FlxObject
 	 */
 	public function play(AnimName:String, ?Force:Bool = false):Void
 	{
-		if(!Force && (_curAnim != null) && (AnimName == _curAnim.name) && (_curAnim.looped || !finished)) return;
+		if(!Force && (_curAnim != null) && (AnimName == _curAnim.name) && (!_curAnim.looped || !finished)) return;
 		_curFrame = 0;
 		_curIndex = 0;
 		_frameTimer = 0;
@@ -980,10 +984,7 @@ class FlxSprite extends FlxObject
 		height = frameHeight = _pixels.height;
 		resetHelpers();
 		
-		#if cpp
-		_tileSheetData = TileSheetManager.addTileSheet(_pixels);
-		_framesData = _tileSheetData.addSpriteFramesData(Math.floor(width), Math.floor(height));
-		#end
+		updateTileSheet();
 		
 		return _pixels;
 	}
@@ -1039,7 +1040,7 @@ class FlxSprite extends FlxObject
 			return _alpha;
 		}
 		_alpha = Alpha;
-		#if flash
+		#if (flash || js)
 		if ((_alpha != 1) || (_color != 0x00ffffff))
 		{
 			_colorTransform = new ColorTransform((_color >> 16) * 0.00392, (_color >> 8 & 0xff) * 0.00392, (_color & 0xff) * 0.00392, _alpha);
@@ -1184,7 +1185,7 @@ class FlxSprite extends FlxObject
 		_point.y = _point.y - offset.y;
 		_flashPoint.x = (point.x - Camera.scroll.x) - _point.x;
 		_flashPoint.y = (point.y - Camera.scroll.y) - _point.y;
-		#if flash
+		#if (flash || js)
 		return framePixels.hitTest(_flashPointZero, Mask, _flashPoint);
 		#else
 		// 1. Check to see if the point is outside of framePixels rectangle
@@ -1221,7 +1222,7 @@ class FlxSprite extends FlxObject
 	/**
 	 * Internal function to update the current animation frame.
 	 */
-	#if flash
+	#if (flash || js)
 	private function calcFrame():Void
 	#else
 	private function calcFrame(?AreYouSure:Bool = false):Void
@@ -1312,6 +1313,10 @@ class FlxSprite extends FlxObject
 		return (((angle == 0) || (_bakedRotation > 0)) && (scale.x == 1) && (scale.y == 1) && (blend == null));
 	}
 	
+	/**
+	 * Use this method for creating tileSheet for FlxSprite. Must be called after makeGraphic(), loadGraphic or loadRotatedGraphic().
+	 * If you forget to call it then you will not see this FlxSprite on c++ target
+	 */
 	public function updateTileSheet():Void
 	{
 	#if cpp

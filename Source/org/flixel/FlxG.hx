@@ -1,5 +1,6 @@
 package org.flixel;
 
+import nme.Assets;
 import nme.display.Bitmap;
 import nme.display.BitmapData;
 import nme.display.Graphics;
@@ -844,13 +845,37 @@ class FlxG
 	 * @param	Key			Force the cache to use a specific Key to index the bitmap.
 	 * @return	The <code>BitmapData</code> we just created.
 	 */
-	static public function addBitmap(Graphic:Class<Bitmap>, ?Reverse:Bool = false, ?Unique:Bool = false, ?Key:String = null):BitmapData
+	//static public function addBitmap(Graphic:Class<Bitmap>, ?Reverse:Bool = false, ?Unique:Bool = false, ?Key:String = null):BitmapData
+	static public function addBitmap(Graphic:Dynamic, ?Reverse:Bool = false, ?Unique:Bool = false, ?Key:String = null):BitmapData
 	{
+		var isClass:Bool = true;
+		if (Std.is(Graphic, Class))
+		{
+			isClass = true;
+		}
+		else if (Std.is(Graphic, String))
+		{
+			isClass = false;
+		}
+		else
+		{
+			return null;
+		}
+		
 		var needReverse:Bool = false;
 		var key:String = Key;
-		if(key == null)
+		if (key == null)
 		{
-			key = Type.getClassName(Graphic) + (Reverse ? "_REVERSE_" : "");
+			if (isClass)
+			{
+				key = Type.getClassName(cast(Graphic, Class<Dynamic>));
+			}
+			else
+			{
+				key = Graphic;
+			}
+			key += (Reverse ? "_REVERSE_" : "");
+			
 			if(Unique && checkBitmapCache(key))
 			{
 				var inc:Int = 0;
@@ -866,8 +891,16 @@ class FlxG
 		//If there is no data for this key, generate the requested graphic
 		if(!checkBitmapCache(key))
 		{
-			//_cache[Key] = (new Graphic()).bitmapData;
-			var bd:BitmapData = Type.createInstance(Graphic, []).bitmapData;
+			var bd:BitmapData = null;
+			if (isClass)
+			{
+				bd = Type.createInstance(cast(Graphic, Class<Dynamic>), []).bitmapData;
+			}
+			else
+			{
+				bd = Assets.getBitmapData(Graphic);
+			}
+			
 			_cache.set(key, bd);
 			if (Reverse)
 			{
@@ -876,7 +909,18 @@ class FlxG
 		}
 		//var pixels:BitmapData = _cache[Key];
 		var pixels:BitmapData = _cache.get(key);
-		if (!needReverse && Reverse && (pixels.width == Type.createInstance(Graphic, []).bitmapData.width/*(new Graphic()).bitmapData.width)*/))
+		
+		var tempBitmap:BitmapData;
+		if (isClass)
+		{
+			tempBitmap = Type.createInstance(Graphic, []).bitmapData;
+		}
+		else
+		{
+			tempBitmap = Assets.getBitmapData(Graphic);
+		}
+		
+		if (!needReverse && Reverse && (pixels.width == tempBitmap.width))
 		{
 			needReverse = true;
 		}
@@ -884,10 +928,10 @@ class FlxG
 		{
 			var newPixels:BitmapData = new BitmapData(pixels.width << 1, pixels.height, true, 0x00000000);
 			
-		#if flash
+		#if (flash || js)
 			newPixels.draw(pixels);
 			var mtx:Matrix = new Matrix();
-			mtx.scale(-1,1);
+			mtx.scale( -1, 1);
 			mtx.translate(newPixels.width, 0);
 			newPixels.draw(pixels, mtx);
 		#else
@@ -904,7 +948,6 @@ class FlxG
 		#end
 			
 			pixels = newPixels;
-			//_cache[Key] = pixels;
 			_cache.set(key, pixels);
 		}
 		return pixels;
@@ -1076,20 +1119,21 @@ class FlxG
 	 * The screen is gradually filled with this color.
 	 * @param	Color		The color you want to use.
 	 * @param	Duration	How long it takes for the fade to finish.
+	 * @param 	FadeIn 		True fades from a color, false fades to it.
 	 * @param	OnComplete	A function you want to run when the fade finishes.
 	 * @param	Force		Force the effect to reset.
 	 */
 	#if flash
-	static public function fade(?Color:UInt = 0xff000000, ?Duration:Float = 1, ?OnComplete:Dynamic = null, Force:Bool = false):Void
+	static public function fade(?Color:UInt = 0xff000000, ?Duration:Float = 1, ?FadeIn:Bool = false, ?OnComplete:Dynamic = null, Force:Bool = false):Void
 	#else
-	static public function fade(?Color:Int = 0xff000000, ?Duration:Float = 1, ?OnComplete:Dynamic = null, Force:Bool = false):Void
+	static public function fade(?Color:Int = 0xff000000, ?Duration:Float = 1, ?FadeIn:Bool = false, ?OnComplete:Dynamic = null, Force:Bool = false):Void
 	#end
 	{
 		var i:Int = 0;
 		var l:Int = FlxG.cameras.length;
 		while (i < l)
 		{
-			FlxG.cameras[i++].fade(Color, Duration, OnComplete, Force);
+			FlxG.cameras[i++].fade(Color, Duration, FadeIn, OnComplete, Force);
 		}
 	}
 	
@@ -1386,7 +1430,7 @@ class FlxG
 				continue;
 			}
 			
-			#if flash
+			#if (flash || js)
 			if (useBufferLocking)
 			{
 				cam.buffer.lock();
@@ -1400,7 +1444,7 @@ class FlxG
 			#end
 			
 			cam.fill(cam.bgColor);
-			#if flash
+			#if (flash || js)
 			cam.screen.dirty = true;
 			#end
 		}
@@ -1424,7 +1468,7 @@ class FlxG
 			}
 			cam.drawFX();
 			
-			#if flash
+			#if (flash || js)
 			if (useBufferLocking)
 			{
 				cam.buffer.unlock();

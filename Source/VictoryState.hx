@@ -29,7 +29,7 @@ class VictoryState extends FlxState
 		add(gibs);
 		gibs.start(false, 0, 0.005);
 		
-		#if flash
+		#if (flash || js)
 		var text:FlxText = new FlxText(0, FlxG.height / 2 - 35, FlxG.width, "VICTORY\n\nSCORE: " + FlxG.score);
 		#else
 		var text:FlxTextField = new FlxTextField(0, FlxG.height / 2 - 35, FlxG.width, "VICTORY\n\nSCORE: " + FlxG.score);
@@ -52,7 +52,7 @@ class VictoryState extends FlxState
 					FlxG.play(Assets.getSound("assets/menu_hit_2" + Mode.SoundExtension));
 				}
 				
-				FlxG.fade(0xff131c1b, 2, onPlay);
+				FlxG.fade(0xff131c1b, 2, false, onPlay);
 			}
 		}
 	}

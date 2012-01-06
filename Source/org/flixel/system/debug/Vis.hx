@@ -81,11 +81,11 @@ class Vis extends Sprite
 		{
 			return;
 		}
-		removeEventListener(Event.ENTER_FRAME,init);
+		removeEventListener(Event.ENTER_FRAME, init);
 		
-		parent.addEventListener(MouseEvent.MOUSE_MOVE,onMouseMove);
-		parent.addEventListener(MouseEvent.MOUSE_DOWN,onMouseDown);
-		parent.addEventListener(MouseEvent.MOUSE_UP,onMouseUp);
+		parent.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+		parent.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+		parent.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 	}
 	
 	/**

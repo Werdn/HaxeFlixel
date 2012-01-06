@@ -86,7 +86,10 @@ class Log extends FlxWindow
 			_text.text = _text.text + Text + "\n";
 			#end
 		}
+		
+		#if (flash || cpp)
 		_text.scrollV = Math.floor(_text.height);
+		#end
 	}
 	
 	/**
