@@ -39,7 +39,7 @@ class Enemy extends FlxSprite
 	public function new()
 	{
 		super();
-		#if flash
+		#if (flash || js)
 		loadRotatedGraphic("assets/bot.png", 64, 0, false, true);
 		#else
 		loadGraphic("assets/bot.png");

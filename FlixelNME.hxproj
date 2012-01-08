@@ -44,7 +44,7 @@
   <!-- Executed before build -->
   <preBuildCommand>haxelib run nme test "FlixelNME.nmml" flash</preBuildCommand>
   <!-- Executed after build -->
-  <postBuildCommand alwaysRun="False" />
+  <postBuildCommand alwaysRun="False">haxelib run nme test "FlixelNME.nmml" html5</postBuildCommand>
   <!-- Other project options -->
   <options>
     <option showHiddenPaths="False" />

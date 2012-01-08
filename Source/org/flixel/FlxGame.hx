@@ -672,6 +672,7 @@ class FlxGame extends Sprite
 					_soundTray.visible = false;
 					
 					//Save sound preferences
+					#if !js
 					var soundPrefs:FlxSave = new FlxSave();
 					if(soundPrefs.bind("flixel"))
 					{
@@ -683,6 +684,7 @@ class FlxGame extends Sprite
 						soundPrefs.data.sound.volume = FlxG.volume;
 						soundPrefs.close();
 					}
+					#end
 				}
 			}
 		}
@@ -856,6 +858,7 @@ class FlxGame extends Sprite
 		addChild(_soundTray);
 		
 		//load saved sound preferences for this game if they exist
+		#if !js
 		var soundPrefs:FlxSave = new FlxSave();
 		if(soundPrefs.bind("flixel") && (soundPrefs.data.sound != null))
 		{
@@ -869,6 +872,7 @@ class FlxGame extends Sprite
 			}
 			soundPrefs.destroy();
 		}
+		#end
 	}
 	
 	/**

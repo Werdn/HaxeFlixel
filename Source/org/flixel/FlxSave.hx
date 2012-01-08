@@ -1,11 +1,11 @@
 package org.flixel;
 
+#if !js
+
 import nme.errors.Error;
 
-#if (flash || cpp)
 import nme.net.SharedObject;
 import nme.net.SharedObjectFlushStatus;
-#end
 
 #if flash
 import flash.events.NetStatusEvent;
@@ -210,3 +210,5 @@ class FlxSave
 		return true;
 	}
 }
+
+#end

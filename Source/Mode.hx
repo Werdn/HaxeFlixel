@@ -8,8 +8,10 @@ class Mode extends FlxGame
 	
 	#if flash
 	public static var SoundExtension:String = ".mp3";
-	#else
+	#elseif cpp
 	public static var SoundExtension:String = ".wav";
+	#else
+	public static var SoundExtension:String = ".ogg";
 	#end
 	
 	public static var SoundOn:Bool = true;

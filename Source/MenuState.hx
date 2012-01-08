@@ -8,7 +8,9 @@ import org.flixel.FlxButton;
 import addons.FlxEmitterExt;
 import org.flixel.FlxG;
 import org.flixel.FlxPath;
+#if !js
 import org.flixel.FlxSave;
+#end
 import org.flixel.FlxSprite;
 import org.flixel.FlxState;
 import org.flixel.FlxText;
@@ -34,6 +36,7 @@ class MenuState extends FlxState
 		
 		//Simple use of flixel save game object.
 		//Tracks number of times the game has been played.
+		#if !js
 		var save:FlxSave = new FlxSave();
 		if(save.bind("Mode"))
 		{
@@ -49,6 +52,7 @@ class MenuState extends FlxState
 			//save.erase();
 			save.close();
 		}
+		#end
 
 		//All the bits that blow up when the text smooshes together
 	//	gibs = new FlxEmitter(FlxG.width / 2 - 50, FlxG.height / 2 - 10);

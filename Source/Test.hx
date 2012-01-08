@@ -5,7 +5,6 @@ import nme.display.StageAlign;
 import nme.display.StageScaleMode;
 import nme.display.FPS;
 import nme.display.Sprite;
-import nme.display.Tilesheet;
 import nme.events.Event;
 import nme.geom.Point;
 import nme.geom.Rectangle;
